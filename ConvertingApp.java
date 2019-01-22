@@ -7,9 +7,9 @@ import java.util.*;
 public class ConvertingApp extends JFrame {
 
     private static final long serialVersionUID = 1L;
-    private JTable table;
+    private static JTable table;
     Map<String, Double> rates;
-    String cExchageSource,cExchageTarget;
+    String cExchangeSource, cExchangeTarget;
 
     Object[][] data = new Object[14][2]; //number of currencies doesn't change
     Object[] columnNames ={"Currency","ILS value"};
@@ -34,15 +34,12 @@ public class ConvertingApp extends JFrame {
         //add labels
         setLabels();
 
-        //move to a separate thread*******
         try {
-            XMLhandler.saveUrl("Currncies.xml", "https://www.boi.org.il/currency.xml");
-            rates=XMLhandler.parseXML("Currncies.xml");
+            rates=XMLhandler.parseXML();
         }
         catch (Exception e){
             e.printStackTrace();
         }
-        //*******
 
         for(Map.Entry<String, Double> entry : rates.entrySet()) {
             //sets the  jtable info also places and sets the buttons
@@ -56,12 +53,12 @@ public class ConvertingApp extends JFrame {
             jRadioBtnSet1[i] = new JRadioButton();
             jRadioBtnSet1[i].setText(key);
             jRadioBtnSet1[i].setBounds(100, 300+i*20, 50, 20);
-            jRadioBtnSet1[i].addActionListener(e -> cExchageSource = ((JRadioButton)e.getSource()).getText());
+            jRadioBtnSet1[i].addActionListener(e -> cExchangeSource = ((JRadioButton)e.getSource()).getText());
 
             jRadioBtnSet2[i] = new JRadioButton();
             jRadioBtnSet2[i].setText(key);
             jRadioBtnSet2[i].setBounds(400, 300+i*20, 50, 20);
-            jRadioBtnSet2[i].addActionListener(e -> cExchageTarget = ((JRadioButton)e.getSource()).getText());
+            jRadioBtnSet2[i].addActionListener(e -> cExchangeTarget = ((JRadioButton)e.getSource()).getText());
 
             //group them
             g1.add(jRadioBtnSet1[i]);
@@ -80,7 +77,6 @@ public class ConvertingApp extends JFrame {
             Object source = evt.getSource();
             if (source == amountField) {
                 amount = ((Number)amountField.getValue()).doubleValue();
-                //System.out.println(amount);
             }
         });
         amountField.setBounds(100,600,200,20);
@@ -93,10 +89,14 @@ public class ConvertingApp extends JFrame {
         //convert the value in the field
             double res=1;
             Convertor c = (cName, rates, num) -> num*rates.get(cName);
-            res = c.toILS(cExchageSource,rates,res);
-            res = c.convert(cExchageTarget,rates,res);
-            System.out.println(c.convert(cExchageSource,rates,res));
-            resultLabel.setText("Result =" +  amount*res);
+            try {
+                res = c.toILS(cExchangeSource, rates, res);
+                res = c.convert(cExchangeTarget, rates, res);
+                resultLabel.setText("Result =" + amount * res);
+            }
+            catch (NullPointerException n){
+                resultLabel.setText("Please select currencies");
+            }
         });
         this.add(exchangeBtn);
 
@@ -129,6 +129,7 @@ public class ConvertingApp extends JFrame {
         };
         //draw it and add the header
         table.setPreferredScrollableViewportSize(table.getPreferredSize());
+        table.getTableHeader().setReorderingAllowed(false);
         JScrollPane scrollPane = new JScrollPane(table);
         this.add(scrollPane);
     }
@@ -147,5 +148,11 @@ public class ConvertingApp extends JFrame {
         this.add(targetLabel);
         this.add(amountLabel);
         this.add(resultLabel);
+    }
+    public static void updateTable(Object arr[]){
+        int i;
+        for (i=0;i<14;i++) {
+            table.setValueAt(arr[i],i,1);
+        }
     }
 }

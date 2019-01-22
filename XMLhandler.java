@@ -5,7 +5,9 @@ import java.net.*;
 import java.util.*;
 
 public class XMLhandler extends Thread  {
-    public static void saveUrl(final String filename, final String urlString) throws IOException {
+    private Object valArr[] = new Object[14];
+
+    public static void downloadXML(final String filename, final String urlString) throws IOException {
         //receives a filename and a URL then copies it locally with the file name chosen
 
         BufferedInputStream in = null;
@@ -28,11 +30,11 @@ public class XMLhandler extends Thread  {
             }
         }
     }
-    public static Map<String,Double> parseXML(final String filename){
+    static Map<String,Double> parseXML(){
         //Parse's the XML and returns a dictionary with the relevant info from it I.E the Currency name and Covert value
-        Map<String,Double> currencies = new HashMap<>();
+        Map<String,Double> rates = new HashMap<>();
         try {
-            File fXmlFile = new File(filename);
+            File fXmlFile = new File("Currncies.xml");
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(fXmlFile);
@@ -47,12 +49,49 @@ public class XMLhandler extends Thread  {
 
                 Element eElement = (Element) nNode;
 
-                currencies.put(eElement.getElementsByTagName("CURRENCYCODE").item(0).getTextContent(), new Double(eElement.getElementsByTagName("RATE").item(0).getTextContent()));
+                rates.put(eElement.getElementsByTagName("CURRENCYCODE").item(0).getTextContent(), new Double(eElement.getElementsByTagName("RATE").item(0).getTextContent()));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return currencies;
+        return rates;
     }
+    void getUpdatedValues(){
+        Map<String,Double> rates=XMLhandler.parseXML();
+        int i=0;
+        for(Map.Entry<String, Double> entry : rates.entrySet()) {
+            Double value = entry.getValue();
+            valArr[i]=value;
+            i++;
+        }
+    }
+    @Override
+    public void run() {
+        //handels the xml refreshing
+        while(true){
+            try {
+                Thread.sleep(300000);//wait 3 minute before refreshing, then repeat
+                downloadXML("Currncies.xml", "https://www.boi.org.il/currency.xml");
+                getUpdatedValues();
+                ConvertingApp.updateTable(valArr);
+            }
+            catch (MalformedURLException e){
+                System.out.println("Error in Url");
+                System.exit(1);
+            }
+            catch (IOException e){
+                System.out.println("Error in IO");
+                System.exit(2);
+            }
+            catch (Exception e){
+                System.out.println("Unknown Error");
+                e.printStackTrace();
+                System.exit(-1);
+            }
+
+        }
+    }
+
+
 }
 
