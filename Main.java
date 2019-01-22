@@ -1,24 +1,21 @@
+import javax.swing.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import static javax.swing.JFrame.EXIT_ON_CLOSE;
+
 public class Main {
 
-
     public static void main(String argv[]) {
-        //just shows you can download and parse the xml
-        Map<String, Double> currencies = new HashMap<>();
-        try {
-            XMLhandler.saveUrl("c.xml", "https://www.boi.org.il/currency.xml");
-            currencies=XMLhandler.parseXML("c.xml");
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-        for(Map.Entry<String, Double> entry : currencies.entrySet()) {
-            String key = entry.getKey();
-            Double value = entry.getValue();
-            System.out.println(key+" "+value);
-        }
+        SwingUtilities.invokeLater(() -> {
+            ConvertingApp frame = new ConvertingApp();
+            frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
+            frame.setTitle("App");
+            frame.setSize(600,900);
+            frame.setLocation(150, 150);
+            frame.setVisible(true);
+        });
+
     }
 
 }

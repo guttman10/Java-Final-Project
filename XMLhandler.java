@@ -6,7 +6,7 @@ import java.util.*;
 
 public class XMLhandler extends Thread  {
     public static void saveUrl(final String filename, final String urlString) throws IOException {
-        /*receives a filename and a URL then copies it locally with the file name chosen*/
+        //receives a filename and a URL then copies it locally with the file name chosen
 
         BufferedInputStream in = null;
         FileOutputStream fout = null;
